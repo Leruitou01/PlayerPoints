@@ -7,6 +7,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import dev.rosewood.rosegarden.RosePlugin;
+import dev.rosewood.rosegarden.config.RoseConfig;
 import dev.rosewood.rosegarden.database.DataMigration;
 import dev.rosewood.rosegarden.database.SQLiteConnector;
 import dev.rosewood.rosegarden.manager.AbstractDataManager;
@@ -77,7 +78,24 @@ public class DataManager extends AbstractDataManager implements Listener {
 
     @Override
     public void reload() {
-        super.reload();
+        RoseConfig config = this.rosePlugin.getRoseConfig();
+        String environmentPassword = System.getenv("PLAYERPOINTS_DB_PASSWORD");
+        if (environmentPassword != null && config.get(Settings.MYSQL_SETTINGS_ENABLED)) {
+            String configuredPassword = config.get(Settings.MYSQL_SETTINGS_PASSWORD);
+            try {
+                // Override only while RoseGarden creates the connection; never save the secret.
+                config.set(Settings.MYSQL_SETTINGS_PASSWORD, environmentPassword);
+                super.reload();
+            } finally {
+                config.set(Settings.MYSQL_SETTINGS_PASSWORD, configuredPassword);
+            }
+        } else {
+            super.reload();
+        }
+
+        // RoseGarden disables the plugin when connection or migration setup fails.
+        if (!this.rosePlugin.isEnabled())
+            return;
 
         this.pointsCache = CacheBuilder.newBuilder()
                 .concurrencyLevel(2)
@@ -130,7 +148,8 @@ public class DataManager extends AbstractDataManager implements Listener {
 
         this.update();
 
-        this.pointsCache.invalidateAll();
+        if (this.pointsCache != null)
+            this.pointsCache.invalidateAll();
         this.pendingTransactions.clear();
         this.pendingUsernameUpdates.clear();
         this.allAccountNames.clear();

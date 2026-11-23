@@ -21,6 +21,11 @@ public class GiveCommand extends BasePointsCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, String target, Integer amount, String silentFlag) {
+        if (!this.isIncreaseAllowed()) {
+            this.sendIncreaseDenied(context.getSender());
+            return;
+        }
+
         PointsUtils.getPlayerByName(target, player -> {
             CommandSender sender = context.getSender();
             if (player == null) {

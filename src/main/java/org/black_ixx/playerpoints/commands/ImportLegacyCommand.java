@@ -19,6 +19,11 @@ public class ImportLegacyCommand extends BasePointsCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, String tableName) {
+        if (!this.isIncreaseAllowed()) {
+            this.sendIncreaseDenied(context.getSender());
+            return;
+        }
+
         CommandSender sender = context.getSender();
         DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
         if (!(dataManager.getDatabaseConnector() instanceof MySQLConnector)) {

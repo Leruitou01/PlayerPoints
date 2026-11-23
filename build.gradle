@@ -1,5 +1,10 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
+buildscript {
+    repositories { mavenCentral() }
+    dependencies { classpath 'com.guardsquare:proguard-gradle:7.8.2' }
+}
+
 plugins {
     id 'com.gradleup.shadow' version '9.2.2'
     id 'java-library'
@@ -59,6 +64,10 @@ processResources {
     }
 }
 
+jar {
+    archiveClassifier.set('plain')
+}
+
 shadowJar {
     archiveClassifier.set(null)
     minimize()
@@ -94,3 +103,17 @@ publishing {
 
 build.dependsOn shadowJar
 generateMetadataFileForShadowPublication.dependsOn jar
+
+tasks.register('obfuscateJar', proguard.gradle.ProGuardTask) {
+    dependsOn shadowJar
+    configuration file('proguard-rules.pro')
+    injars tasks.named('shadowJar').flatMap { it.archiveFile }
+    outjars layout.buildDirectory.file("libs/PlayerPoints-${project.version}-obfuscated.jar")
+    libraryjars sourceSets.main.compileClasspath
+    fileTree("${System.getProperty('java.home')}/jmods") {
+        include '*.jmod'
+    }.each { libraryjars it, jarfilter: '!**.jar', filter: '!module-info.class' }
+    printmapping layout.buildDirectory.file('obfuscation/mapping.txt').get().asFile
+}
+
+build.dependsOn obfuscateJar

@@ -24,6 +24,11 @@ public class GiveAllCommand extends BasePointsCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, Integer amount, String includeOffline, String silentFlag) {
+        if (!this.isIncreaseAllowed()) {
+            this.sendIncreaseDenied(context.getSender());
+            return;
+        }
+
         this.rosePlugin.getScheduler().runTaskAsync(() -> {
             DataManager dataManager = this.rosePlugin.getManager(DataManager.class);
             CommandSender sender = context.getSender();

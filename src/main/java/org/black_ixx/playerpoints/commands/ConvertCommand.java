@@ -19,6 +19,11 @@ public class ConvertCommand extends BasePointsCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, CurrencyPlugin currencyPlugin, String currencyId, String confirm) {
+        if (!this.isIncreaseAllowed()) {
+            this.sendIncreaseDenied(context.getSender());
+            return;
+        }
+
         CommandSender sender = context.getSender();
         ConversionManager conversionManager = this.rosePlugin.getManager(ConversionManager.class);
         if (!conversionManager.getEnabledConverters().contains(currencyPlugin)) {

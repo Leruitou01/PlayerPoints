@@ -36,6 +36,11 @@ public class SetCommand extends BasePointsCommand {
             }
 
             // Try to set the points for the player
+            if (amount > this.api.look(player.getFirst()) && !this.isIncreaseAllowed()) {
+                this.sendIncreaseDenied(sender);
+                return;
+            }
+
             if (this.api.set(player.getFirst(), PointsUtils.getSenderUUID(sender), amount) && silentFlag == null) {
                 this.localeManager.sendCommandMessage(sender, "command-set-success", StringPlaceholders.builder("player", player.getSecond())
                         .add("balance", PointsUtils.formatPoints(this.api.look(player.getFirst())))

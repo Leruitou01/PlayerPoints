@@ -29,6 +29,11 @@ public class ImportCommand extends BasePointsCommand {
 
     @RoseExecutable
     public void execute(CommandContext context, String confirm) {
+        if (!this.isIncreaseAllowed()) {
+            this.sendIncreaseDenied(context.getSender());
+            return;
+        }
+
         CommandSender sender = context.getSender();
         File file = new File(this.rosePlugin.getDataFolder(), "storage.yml");
         if (!file.exists()) {

@@ -43,6 +43,8 @@ public class PlayerPoints extends RosePlugin {
 
     @Override
     public void enable() {
+        this.getLogger().info("此版本受Fairylands监督，禁止二次分发");
+
         if (SettingKey.VAULT.get() && Bukkit.getPluginManager().isPluginEnabled("Vault")) {
             this.vaultLayer = new PlayerPointsVaultLayer(this);
 
